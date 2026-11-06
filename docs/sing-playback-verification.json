@@ -1,0 +1,194 @@
+{
+  "checkedAt": "2026-09-27",
+  "environment": "Android emulator, embedded YouTube player 13.0.0",
+  "sampleSeconds": 6,
+  "results": [
+    {
+      "id": "dudarai-new",
+      "videoId": "Y4_UpbgH6vQ",
+      "state": 1,
+      "seconds": 3.22,
+      "error": null
+    },
+    {
+      "id": "dudarai-alternate",
+      "videoId": "tJ6a7oMULjM",
+      "state": 1,
+      "seconds": 5.07,
+      "error": null
+    },
+    {
+      "id": "samaltau-new",
+      "videoId": "OLrFs0WRxgY",
+      "state": 1,
+      "seconds": 4.88,
+      "error": null
+    },
+    {
+      "id": "samaltau-alternate",
+      "videoId": "1NkoFc-bQ_s",
+      "state": 1,
+      "seconds": 5.1,
+      "error": null
+    },
+    {
+      "id": "yapurai",
+      "videoId": "YOy09eVGZTM",
+      "state": 1,
+      "seconds": 4.96,
+      "error": null
+    },
+    {
+      "id": "dudarai",
+      "videoId": "DYqBRjA-s98",
+      "state": -1,
+      "seconds": 0,
+      "error": 150
+    },
+    {
+      "id": "balqadisha",
+      "videoId": "isOln_AnnNA",
+      "state": 1,
+      "seconds": 5.07,
+      "error": null
+    },
+    {
+      "id": "bir-bala",
+      "videoId": "yrM01U6vhjM",
+      "state": 1,
+      "seconds": 4.79,
+      "error": null
+    },
+    {
+      "id": "qamajai",
+      "videoId": "00zSwKH8hpk",
+      "state": 1,
+      "seconds": 5.0,
+      "error": null
+    },
+    {
+      "id": "elim-ai",
+      "videoId": "IUbiiko_3iU",
+      "state": 1,
+      "seconds": 5.15,
+      "error": null
+    },
+    {
+      "id": "bipyl",
+      "videoId": "rZNlUtx4oCA",
+      "state": 1,
+      "seconds": 5.24,
+      "error": null
+    },
+    {
+      "id": "guilderaiym",
+      "videoId": "e4k8HELTzx4",
+      "state": 1,
+      "seconds": 4.42,
+      "error": null
+    },
+    {
+      "id": "daididau",
+      "videoId": "bvx7g70SIrg",
+      "state": 1,
+      "seconds": 4.69,
+      "error": null
+    },
+    {
+      "id": "samaltau",
+      "videoId": "92rINhHwfCg",
+      "state": -1,
+      "seconds": 0,
+      "error": 150
+    },
+    {
+      "id": "kalinka",
+      "videoId": "bobTxw_VJOM",
+      "state": 1,
+      "seconds": 4.86,
+      "error": null
+    },
+    {
+      "id": "korobeiniki",
+      "videoId": "KeurN5I-c6I",
+      "state": 1,
+      "seconds": 4.92,
+      "error": null
+    },
+    {
+      "id": "iz-za-ostrova",
+      "videoId": "neB-Ns-CnUM",
+      "state": 1,
+      "seconds": 4.6,
+      "error": null
+    },
+    {
+      "id": "troika",
+      "videoId": "Pqqinwbw6Bg",
+      "state": 1,
+      "seconds": 4.96,
+      "error": null
+    },
+    {
+      "id": "ey-ukhnem",
+      "videoId": "eE-Q6RH_Zzk",
+      "state": 1,
+      "seconds": 3.87,
+      "error": null
+    },
+    {
+      "id": "dubinushka",
+      "videoId": "xeLxsBpzYDg",
+      "state": 1,
+      "seconds": 3.93,
+      "error": null
+    },
+    {
+      "id": "za-morem-sinichka",
+      "videoId": "ysDQMic86Fw",
+      "state": 1,
+      "seconds": 4.58,
+      "error": null
+    },
+    {
+      "id": "svetit-mesiats",
+      "videoId": "WQ-tBW5Abxg",
+      "state": 1,
+      "seconds": 4.69,
+      "error": null
+    },
+    {
+      "id": "vanka",
+      "videoId": "-nrd02DGQmM",
+      "state": 1,
+      "seconds": 1.96,
+      "error": null
+    },
+    {
+      "id": "vo-pole-bereza",
+      "videoId": "Ck00bzX1trA",
+      "state": 1,
+      "seconds": 4.98,
+      "error": null
+    }
+  ],
+  "installedAppRecoveryCheck": {
+    "primary": {
+      "id": "Y4_UpbgH6vQ",
+      "state": 1,
+      "seconds": 101.28365293515014
+    },
+    "errorAndAlternativeShown": true,
+    "alternative": {
+      "id": "tJ6a7oMULjM",
+      "state": 1,
+      "seconds": 0.6899818626708984
+    },
+    "errorCleared": true,
+    "afterRetry": {
+      "id": "tJ6a7oMULjM",
+      "state": 5,
+      "seconds": 3.44514
+    }
+  }
+}

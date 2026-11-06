@@ -1,0 +1,2 @@
+ALTER TABLE exercise_result
+    ADD COLUMN practice BOOLEAN NOT NULL DEFAULT FALSE;

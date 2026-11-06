@@ -1,0 +1,346 @@
+openapi: 3.1.0
+info:
+  title: ÖmirAI API
+  version: 1.0.0
+servers:
+  - url: /api/v1
+paths:
+  /youtube/status:
+    get:
+      summary: Check whether a backend YouTube key is configured (no authentication required)
+      responses:
+        "200":
+          description: Key presence only, not a live Google validation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  configured: { type: boolean }
+  /youtube/channels:
+    get:
+      summary: Three activity-specific channel suggestions, or paginated channel search for guests and accounts
+      parameters:
+        - in: query
+          name: kind
+          required: true
+          schema: { type: string, enum: [exercise, walking, taiChi, yoga, pilates, custom, cognitive, reading] }
+        - in: query
+          name: q
+          schema: { type: string, maxLength: 100, default: "" }
+        - in: query
+          name: language
+          schema: { type: string, enum: [en, kk, ru], default: en }
+        - in: query
+          name: pageToken
+          schema: { type: string, maxLength: 512 }
+      responses:
+        "200":
+          description: Channel items (id, title, thumbnail) and optional nextPageToken
+        "400": { description: Invalid query }
+        "429": { description: YOUTUBE_LIMITED; retry later }
+        "503": { description: YOUTUBE_NOT_CONFIGURED or YOUTUBE_UNAVAILABLE }
+  /youtube/videos:
+    get:
+      summary: Eligible public videos from one page of a channel's uploads (no authentication required)
+      parameters:
+        - in: query
+          name: channelId
+          required: true
+          schema: { type: string, pattern: '^UC[A-Za-z0-9_-]{22}$' }
+        - in: query
+          name: minimumMinutes
+          required: true
+          schema: { type: integer, minimum: 1, maximum: 240 }
+        - in: query
+          name: pageToken
+          schema: { type: string, maxLength: 512 }
+      responses:
+        "200":
+          description: Video items (id, title, channelId, channelTitle, thumbnail, seconds) and optional nextPageToken; empty items with a cursor do not mean the channel has no matching video
+        "400": { description: Invalid channel or duration }
+        "429": { description: YOUTUBE_LIMITED; retry later }
+        "503": { description: YOUTUBE_NOT_CONFIGURED or YOUTUBE_UNAVAILABLE }
+  /auth/code/request:
+    post:
+      summary: Request a six-digit email sign-in code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email, maxLength: 320 }
+      responses:
+        "202": { description: Request accepted }
+  /auth/code/verify:
+    post:
+      summary: Exchange an email code for access and refresh tokens
+      responses:
+        "200":
+          description: Token pair
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TokenPair' }
+        "401": { description: Code invalid or expired }
+  /auth/refresh:
+    post:
+      summary: Rotate a refresh token
+      responses:
+        "200": { description: New token pair }
+  /auth/logout:
+    post:
+      summary: Revoke a refresh token
+      responses:
+        "204": { description: Revoked }
+  /me:
+    get:
+      security: [{ bearer: [] }]
+      summary: Read the current profile
+      responses:
+        "200": { description: Current profile }
+    patch:
+      security: [{ bearer: [] }]
+      summary: Update profile and settings
+      responses:
+        "200": { description: Updated profile }
+    delete:
+      security: [{ bearer: [] }]
+      summary: Permanently delete the account and cloud history
+      responses:
+        "204": { description: Deleted }
+  /sync/day:
+    post:
+      security: [{ bearer: [] }]
+      summary: Sync account-owned routine, activity, reading, movement and recommendation records
+      description: Revision-checked mutable records, immutable events, and an authoritative account snapshot. Conflicts require a user choice.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [records]
+              properties:
+                records:
+                  type: array
+                  maxItems: 2000
+                  items:
+                    type: object
+                    required: [kind, id, revision, payload]
+                    properties:
+                      kind: { type: string, enum: [routines, occurrences, activity_events, reading_positions, reading_sessions, movement_sessions, recommendations, day_settings, music_sessions, music_progress, togyz_games, togyz_progress] }
+                      id: { type: string, maxLength: 240 }
+                      revision: { type: integer, minimum: 0 }
+                      payload: { type: string, maxLength: 30000, description: Validated JSON entity; owner comes from the bearer token }
+      responses:
+        "200": { description: Account snapshot containing cursor, records, and conflicts identified by kind and id }
+        "400": { description: Invalid record }
+  /sync:
+    get:
+      security: [{ bearer: [] }]
+      summary: Download changes after an opaque cursor
+      responses:
+        "200":
+          description: Sync page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyncResponse' }
+    post:
+      security: [{ bearer: [] }]
+      summary: Idempotently upload local records and download changes
+      responses:
+        "200":
+          description: Sync page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SyncResponse' }
+        "409": { description: UUID ownership or content conflict }
+  /connect:
+    get:
+      security: [{ bearer: [] }]
+      summary: Own settings, invitation code, permission-filtered friends, challenges and family subscriptions
+      responses:
+        "200": { description: Snapshot including familyDeliveryConfigured; friend summaries contain only sharing, activeDays, activeToday and optional streak }
+        "401": { description: Sign in required }
+  /connect/settings:
+    put:
+      security: [{ bearer: [] }]
+      summary: Explicit social and sharing preferences; all sharing is off by default
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [enabled, shareActivity, showStreak]
+              properties:
+                enabled: { type: boolean }
+                shareActivity: { type: boolean }
+                showStreak: { type: boolean }
+      responses:
+        "200": { description: Saved }
+  /connect/friends:
+    post:
+      security: [{ bearer: [] }]
+      summary: Request friendship using another enabled member's invitation code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string, minLength: 10, maxLength: 10 }
+      responses:
+        "200": { description: Pending request saved; repeated request does not duplicate }
+        "400": { description: Invalid code, self-request or social features disabled }
+  /connect/friends/{friendshipId}:
+    parameters:
+      - { in: path, name: friendshipId, required: true, schema: { type: string, format: uuid } }
+    post:
+      security: [{ bearer: [] }]
+      summary: Accept, remove, invite once per day, or give one earned freeze at most once per week
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [accept, remove, invite, gift] }
+      responses:
+        "200": { description: Action applied }
+        "400": { description: Ownership, permission, consent or frequency check failed }
+  /connect/freeze:
+    post:
+      security: [{ bearer: [] }]
+      summary: Spend one earned freeze to bridge yesterday, without inventing an active day
+      responses:
+        "200": { description: Streak preserved }
+        "400": { description: No usable freeze or yesterday already active/frozen }
+  /connect/challenges:
+    post:
+      security: [{ bearer: [] }]
+      summary: Invite an accepted friend to a seven-day optional challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [friendshipId, type]
+              properties:
+                friendshipId: { type: string, format: uuid }
+                type: { type: string, enum: [reading, active, walking, movement] }
+      responses:
+        "200": { description: Pending challenge created; goals are respectively 5 days, 7 days, 4 walking days and 60 minutes }
+        "400": { description: Invalid friendship or five current invitations already exist }
+  /connect/challenges/{challengeId}:
+    parameters:
+      - { in: path, name: challengeId, required: true, schema: { type: string, format: uuid } }
+    post:
+      security: [{ bearer: [] }]
+      summary: Recipient accepts or declines a pending challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action: { type: string, enum: [accept, decline] }
+      responses:
+        "200": { description: Decision saved }
+        "400": { description: Not the recipient or not pending }
+  /connect/family:
+    post:
+      security: [{ bearer: [] }]
+      summary: Save explicit consent for a chosen recipient; recipient opt-out cannot be overridden
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipient, inactivityDays, weekly, consent]
+              properties:
+                recipient: { type: string, format: email, maxLength: 254 }
+                inactivityDays: { type: integer, minimum: 2, maximum: 30 }
+                weekly: { type: boolean }
+                consent: { type: boolean, const: true }
+      responses:
+        "200": { description: Consent saved, subject to server delivery configuration }
+        "400": { description: Invalid input, no consent, recipient opted out or recipient limit reached }
+  /connect/family/{subscriptionId}:
+    parameters:
+      - { in: path, name: subscriptionId, required: true, schema: { type: string, format: uuid } }
+    delete:
+      security: [{ bearer: [] }]
+      summary: Owner revokes delivery consent
+      responses:
+        "200": { description: Disabled }
+        "400": { description: Not owned by this account }
+  /family/unsubscribe/{token}:
+    parameters:
+      - { in: path, name: token, required: true, schema: { type: string, format: uuid } }
+    get:
+      security: []
+      summary: Recipient confirmation form; GET does not change subscriptions
+      responses:
+        "200": { description: Accessible HTML form }
+    post:
+      security: []
+      summary: Revoke delivery using the opaque email token, without account login
+      responses:
+        "200": { description: Recipient opted out; repeated submission is safe }
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  schemas:
+    TokenPair:
+      type: object
+      required: [accessToken, refreshToken, expiresInSeconds, userId]
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        expiresInSeconds: { type: integer, format: int64 }
+        userId: { type: string, format: uuid }
+    ExerciseResult:
+      type: object
+      required: [id, installationId, exerciseType, difficulty, algorithmVersion, startedAt, completedAt, correctCount, attemptedCount, score, practice]
+      properties:
+        id: { type: string, format: uuid }
+        workoutId: { type: [string, 'null'], format: uuid }
+        installationId: { type: string, format: uuid }
+        exerciseType: { type: string, enum: [quickSums, wordGarden, picturePairs, findTarget, runningTotal, colorWord] }
+        difficulty: { type: integer, minimum: 1, maximum: 10 }
+        algorithmVersion: { type: integer, minimum: 1 }
+        startedAt: { type: string, format: date-time }
+        completedAt: { type: string, format: date-time }
+        localDate: { type: string, format: date }
+        correctCount: { type: integer, minimum: 0 }
+        attemptedCount: { type: integer, minimum: 1 }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        practice: { type: boolean }
+    SyncResponse:
+      type: object
+      required: [cursor, workouts, results]
+      properties:
+        cursor: { type: string }
+        workouts: { type: array, items: { type: object } }
+        results: { type: array, items: { $ref: '#/components/schemas/ExerciseResult' } }
+    ApiError:
+      type: object
+      required: [code, message, requestId]
+      properties:
+        code: { type: string }
+        message: { type: string }
+        requestId: { type: string }

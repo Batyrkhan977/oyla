@@ -1,0 +1,14 @@
+.idea/
+.vscode/
+.DS_Store
+*.iml
+.env
+mobile/.dart_tool/
+mobile/.flutter-plugins*
+mobile/build/
+mobile/android/.gradle/
+backend/.gradle/
+backend/build/
+backend/.local-data/
+infra/postgres-data/
+scripts/__pycache__/
